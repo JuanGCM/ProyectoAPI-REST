@@ -1,38 +1,46 @@
-import {Songs, songsRepository} from '../models/songs';
+import {Song, songsRepository} from '../models/songs';
 
 const SongController = {
     todosLosSongs : (req, res) => {
-        res.json(songsRepository.findAll());
+        const data = await songsRepository.findAll();
+        if (Array.isArray(data) && data.length > 0) 
+            res.json(data);
+        else
+            res.sendStatus(404);
     },
 
     songPorId : (req, res) => {
-        let song = songsRepository.findById(req.parans.id);
-        if (song != undefined){
+        let song = await songsRepository.findById(req.params.id);
+        if (song != undefined) {
             res.json(song);
-        }else{
+        } else {
             res.sendStatus(404);
         }
     },
 
-    me : (req, res) => {
-        res.json(req.context.me);
-    },
-
     nuevoSong : (req, res) => {
-        let songCreado = songsRepository.create(new Songs(undefined, req.body.titulo,req.body.artista,req.body.album));
-        res.status(201).json(songCreado);
+        let songCreated = await songsRepository.create({
+            titulo: req.body.titulo,
+            artista: req.body.artista,
+            album: req.body.album
+        })
+        res.status(201).json(songCreated);
     },
 
     editarSong: (req, res) => {
-        let songModificado = songsRepository.updateById(req.params.id, new Songs(undefined, req.body.titulo,req.body.artista,req.body.album));
-        if (songModificado == undefined)
+        let songModified = await songsRepository.updateById(req.params.id, {
+            titulo: req.body.titulo,
+            artista: req.body.artista,
+            album: req.body.album
+        });
+        if (songModified == undefined)
             res.sendStatus(404);
-        else   
-            res.status(200).json(usuarioModificado);
+        else
+            res.status(200).json(songModified);
     },
 
     eliminarSong: (req, res) => {
-        songsRepository.delete(req.params.id);
+        await songsRepository.delete(req.params.id);
         res.sendStatus(204);
     }
 };

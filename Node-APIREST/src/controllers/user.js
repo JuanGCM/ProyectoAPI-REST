@@ -20,12 +20,12 @@ const UserController = {
 
     usuarioPorId: async (req, res) => {
 
-            let user = await userRepository.findById(req.params.id);
-            if (user != undefined) {
-                res.json(user);
-            } else {
-                res.sendStatus(404);
-            }
+        let user = await userRepository.findById(req.params.id);
+        if (user != undefined) {
+            res.json(user);
+        } else {
+            res.sendStatus(404);
+        }
 
     },
 
