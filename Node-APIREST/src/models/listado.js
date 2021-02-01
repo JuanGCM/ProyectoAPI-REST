@@ -1,64 +1,67 @@
-import {Songs} from './songs'
+import {Song} from './songs'
 import { User, userRepository } from './users';
 
-class Listado{
+import mongoose from 'mongoose';
+const {
+    Schema
+} = mongoose;
 
-    constructor(nombre, descripcion, userId, songs, id=0) {
-        this.id = id;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.userId = userId;
-        this.songs = songs[Songs];      
-    }
+const listadoSchema = new Schema({
+    nombre: String,
+    descripcion: String,
+    userId: {
+        type: mongoose.ObjectId,
+        ref: 'User'
+    },
+    songs: songs[Song]
+});
 
-}
-
-let songs1 =[
-    new Songs(),
-    new Songs()
-];
-
-let songs2 =[
-    new Songs(),
-    new Songs()
-];
-
-let listados = [
-    new Listado('ejemplo 1', 'Esta es una descripcion de ejemplo', 1, songs1, 1),
-    new Listado('ejemplo 2', 'Esta es otra descripcion de ejemplo', 2, songs2, 2)
-];
-
-
-const indexOfPorId = (id) => {
-    let posicionEncontrado = -1;
-    for (let i = 0; i < listados.length && posicionEncontrado == -1; i++) {
-        if (listados[i].id == id)
-            posicionEncontrado = i;
-    }
-    return posicionEncontrado;
-}
+const Listado = mongoose.model('Listado', listadoSchema);
 
 const listadoRepository = {
 
-    findAll : () => listados.map(lista => {
-        lista.author = userRepository.findById(lista.user_id).toDto()
-        return lista;
-    }),
-    findById : (id) => {
-        const index = indexOfPorId(id);
-        if (index != -1) {
-            const lista = listados[index];
-            lista.author = userRepository.findById(lista.user_id).toDto();
-        } else
-            return undefined;
+    async findAll() {
+        return await Listado
+            .find()
+            .populate('userId', 'id')            
+            .exec();
     },
-    create : (nuevaLista) => {
-        const lastId = listados.length == 0 ? 0 : listados[listados.length-1].id;
-        const newId = lastId + 1;
-        const result = new Listado(nuevaLista.user_id, nuevaLista.title, nuevaLista.text, newId);
-        listados.push(result);
-        result.author = userRepository.findById(result.user_id).toDto();
+
+    async findById(id) {
+        return await Listado
+            .findById(id)
+            .populate('userId', 'id')                        
+            .exec();
+    },
+
+    async create(nuevoListado) {
+        const listado = new Listado({
+            nombre: nuevoListado.nombre,
+            descripcion: nuevoListado.descripcion,
+            userId: nuevoListado.userId,
+            songs: nuevoListado.userId
+        });
+
+        const result = await listado.save();
         return result;
+    },
+
+    async updateById(id, listaModificada) {
+        const listado = await Listado.findById(id);
+
+        if (listado == null) {
+            return undefined;
+        } else {
+            return await Object.assign(listado, listaModificada).save();
+        }
+    },
+
+    async update(listaModificada) {
+        return await this.updateById(listaModificada.id, listaModificada);
+    },
+
+    async delete(id) {
+        await Listado.findByIdAndRemove(id).exec();
     }
 
 }

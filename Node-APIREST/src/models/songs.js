@@ -1,69 +1,61 @@
-class Songs {
+import mongoose from 'mongoose';
+const {
+    Schema
+} = mongoose;
 
-    constructor(id, titulo, artista, album) {
-        this.id = id;
-        this.titulo = titulo;
-        this.artista = artista;
-        this.album = album;        
-    }
+const songSchema = new Schema({
+    titulo: String,
+    artista: String,
+    album: String
+});
 
-}
-
-let songs = [
-    new Songs(1, 'fsdfsdf', 'Luis Miguel López', 'gfgfr'),
-    new Songs(2, 'sdfsdf', 'Ángel Naranjo','trtrt')
-];
-
-
-const indexOfPorId = (id) => {
-    let posicionEncontrado = -1;
-    for (let i = 0; i < songs.length && posicionEncontrado == -1; i++) {
-        if (songs[i].id == id)
-            posicionEncontrado = i;
-    }
-    return posicionEncontrado;
-}
-
+const Song = mongoose.model('Song', songSchema);
 
 const songsRepository = {
 
-    findAll() {
-        return songs;
+    async findAll() {
+        return await Song
+            .find()
+            .exec();
     },
-    findById(id) {
-        const posicion = indexOfPorId(id);
-        return posicion = -1 ? undefined : songs[posicion];
+
+    async findById(id) {
+        return await Song
+            .findById(id)
+            .exec();
     },
-    create(newSong) {
-        const lastId = songs.length == 0 ? 0 : songs[songs.length-1].id;
-        const newId = lastId + 1;
-        const result = new Songs(newId, newSong.titulo, newSong.artista, newSong.album);
-        users.push(result);
+
+    async create(newSong) {
+        const song = new Song({
+            titulo: newSong.titulo,
+            artista: newSong.artista,
+            album: newSong.album
+        });
+
+        const result = await song.save();
         return result;
     },
-    updateById(id, modifiedSong) {
-        const posicionEncontrado = indexOfPorId(id)
-        if (posicionEncontrado != -1) {
-            songs[posicionEncontrado].titulo = modifiedSong.titulo;
-            songs[posicionEncontrado].artista = modifiedSong.artista;
-            songs[posicionEncontrado].album = modifiedSong.album;
+    
+    async updateById(id, modifiedSong) {
+        const song = await Song.findById(id);
+
+        if (song == null) {
+            return undefined;
+        } else {
+            return await Object.assign(song, modifiedSong).save();
         }
-        return posicionEncontrado != -1 ? songs[posicionEncontrado] : undefined;
     },
     // Versión del anterior, en la que el ID va dentro del objeto usuario
-    update(modifiedSong) {
-        return this.update(modifiedSong.id, modifiedSong);
-    }, 
-    delete(id) {
-        const posicionEncontrado = indexOfPorId(id);
-        if (posicionEncontrado != -1)
-            songs.splice(posicionEncontrado, 1);
+    async update(modifiedSong) {
+        return await this.updateById(modifiedSong.id, modifiedSong);
+    },
+    async delete(id) {
+        await Song.findByIdAndRemove(id).exec();
     }
 
 }
 
-
 export  {
-    Songs,
+    Song,
     songsRepository
 }

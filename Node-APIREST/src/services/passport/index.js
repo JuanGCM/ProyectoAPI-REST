@@ -54,25 +54,6 @@ export const password = () => (req, res, next) =>
             return res.status(400).json(err)
         else if (err || !user)
             return res.status(401).end()
-        
-        /*
-        En este ejemplo usamos a authenticate() de forma que le da acceso 
-        a los objetos req, res y next mediante el cierre (ver apuntes de Javascript)
-        Si la autenticación falla, user se establecerá en false. 
-        Si ocurrió una excepción, se devolverá el error.
-        Se pasa también un argumento opcional info, que contiene detalles adicionales proporcionados
-        por la verificación de la estrategia.
-        Se infopasará un argumento opcional , que contiene detalles adicionales proporcionados 
-        por la devolución de llamada de verificación de la estrategia.
-        La devolución de llamada puede usar los argumentos proporcionados para manejar 
-        el resultado de la autenticación como quieras. 
-        Ten en cuenta que cuando se utiliza una devolución de llamada personalizada, 
-        es responsabilidad de la aplicación establecer una sesión 
-        (llamando req.login()) y enviar una respuesta.
-        Ten en cuenta además que si la autenticación tiene éxito, se
-        almacena el usuario autenticado en req.user
-        Más información en http://www.passportjs.org/docs/authenticate/
-        */
 
         req.logIn(user, { session: false }, (err) => {
             if (err) return res.status(401).end()

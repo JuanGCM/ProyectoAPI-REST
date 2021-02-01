@@ -24,17 +24,26 @@ app.use((req, res, next) => {
     models,
     // El "usuario actual". Ahora mismo simula que hayamos hecho un login
     // Más adelante, lo podremos conseguir de otra forma.
-    me: models.songs.songsRepository.findById(1)
+    //me: models.songs.songsRepository.findById(1)
   };
   next();
 });
 
 // Configuración de las rutas.
-app.use('/songs', routes.song);
+app.use('/users', routes.user);
 app.use('/post', routes.post);
 
-app.listen(process.env.PORT, () =>
-  console.log(
-    `¡Aplicación de ejemplo escuchando en el puerto ${process.env.PORT}!`
-  )
-);
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true }, err => {
+  
+  if (err) {
+    console.log(`Error de conexión a la base de datos: ${JSON.stringify(err)}`);
+  } else {
+    console.log(`Conexión correcta a la base de datos en la URI ${process.env.DB_URI}`);
+    app.listen(process.env.PORT, () =>
+      console.log(
+        `¡Aplicación de ejemplo escuchando en el puerto ${process.env.PORT}!`
+      )
+    );
+  }
+
+});
