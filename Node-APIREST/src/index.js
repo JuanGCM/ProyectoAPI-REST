@@ -6,6 +6,7 @@ import morgan from "morgan";
 import morganBody from "morgan-body";
 import mongoose from "mongoose";
 import * as modelos from './models/index';
+import bcrypt from 'bcryptjs';
 
 import routes from './routes';
 
