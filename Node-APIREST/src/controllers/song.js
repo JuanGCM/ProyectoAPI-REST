@@ -52,8 +52,13 @@ const SongController = {
     },
 
     eliminarSong:async  (req, res) => {
-        await songsRepository.delete(req.params.id);
-        res.sendStatus(204);
+        let song = await songsRepository.findById(req.params.id);
+        if(song != undefined){
+            await songsRepository.delete(req.params.id);
+            res.sendStatus(204);
+        }else{
+            res.status(404).json({mensaje: 'Cancion no encontrada'});
+        }    
     }
 };
 

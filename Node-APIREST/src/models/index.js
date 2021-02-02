@@ -1,12 +1,10 @@
 import * as songs from './songs';
 import * as users from './user';
-import posts from './posts';
-import listado from './listado';
+import * as listados from './listado';
 
 
 export default {
-    listado,
+    listados,
     users,
-    posts,
     songs
 }
