@@ -11,6 +11,7 @@ router.get('/', UserController.todosLosUsuarios)
 router.get('/:id',UserController.usuarioPorId);
 
 router.post('/', [
+        body('fullname').isLength({min: 8}).withMessage('La longitud mínima del nombre son 8 caracteres'),
         body('username').isLength({min: 5}).withMessage('La longitud mínima del nombre de usuario son 5 caracteres'),
         body('email')
             .isEmail()
@@ -22,6 +23,7 @@ router.post('/', [
                     return true;
                 }
             }),
+        body('password').isLength({min: 5}).withMessage('La longitud mínima del nombre de usuario son 5 caracteres'),            
         body('id').not().exists().withMessage('No es necesario que proporcione un ID; este se asignará automáticamente')
     ], 
     validar, UserController.nuevoUsuario);

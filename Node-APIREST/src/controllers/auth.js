@@ -7,7 +7,7 @@ import { JwtService } from '../services/jwt';
 
 const AuthController = {
 
-    register: (req, res, next) => {
+    register: async (req, res, next) => {
         // ¿Realmente este método es necesario, o podríamos modificar la petición POST en /users?
         // Mantendremos solamente esta versión, que estará más actualizada
         
@@ -15,7 +15,7 @@ const AuthController = {
         // No es necesario hacer nada más aquí.
 
 
-        let usuarioCreado = userRepository.create(
+        let usuarioCreado = await userRepository.create(
             new User(req.body.username, req.body.email, 
                         bcrypt.hashSync(req.body.password, parseInt(process.env.BCRYPT_ROUNDS))));
 
@@ -31,7 +31,9 @@ const AuthController = {
         // Aquí tan solo tenemos que preocuparnos de generar y devolver el token
         const token = JwtService.sign(req.user);
         res.status(201).json({
-            user: req.user,
+            fullname: req.user.fullname,
+            username: req.user.username,
+            email: req.user.email,
             token: token
         });
     }

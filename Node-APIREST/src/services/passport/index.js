@@ -13,8 +13,8 @@ passport.use(new LocalStrategy({
     usernameField: "username",
     passwordField: "password",
     session: false
-},(username, password, done)=> {
-    const user = userRepository.findByUsername(username);
+},async (username, password, done)=> {
+    const user = await userRepository.findByUsername(username);
     if (user == undefined)
         return done(null, false); // El usuario no existe
     else if (!bcrypt.compareSync(password, user.password))

@@ -1,11 +1,18 @@
 import mongoose from 'mongoose';
-const {
-    Schema
-} = mongoose;
+
+const { Schema } = mongoose;
 
 const songSchema = new Schema({
-    titulo: String,
-    artista: String,
+    titulo: {
+        type: String,
+        required: [true, 'El titulo es requerido'],
+        minlength: [5, 'EL titulo debe de tener como minimo 5 caracteres']
+        },
+    artista: {
+        type: String,
+        required: [true, 'El artista es requerido'],
+        minlength: [5, 'EL artista debe de tener como minimo 5 caracteres']
+        },
     album: String
 });
 
@@ -25,15 +32,14 @@ const songsRepository = {
             .exec();
     },
 
-    async create(newSong) {
+    async create(titulo, artista, album) {
         const song = new Song({
-            titulo: newSong.titulo,
-            artista: newSong.artista,
-            album: newSong.album
+            titulo: titulo,
+            artista: artista,
+            album: album
         });
 
-        const result = await song.save();
-        return result;
+        return await song.save();
     },
     
     async updateById(id, modifiedSong) {

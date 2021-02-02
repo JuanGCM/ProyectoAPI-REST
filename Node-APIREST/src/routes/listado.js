@@ -2,21 +2,29 @@ import { Router } from 'express';
 import { ListadoController } from '../controllers/listado';
 import { param, body } from 'express-validator';
 import { validar } from '../middlewares/validacion';
+import { token } from '../services/passport';
 
 const router = Router();
 
-router.get('/', ListadoController.todosLosListados)
+router.get('/all',token(), ListadoController.todosLosListados)
 
-router.get('/:id',ListadoController.listadoPorId);
+router.get('/:id',token(), ListadoController.listadoPorId);
 
-router.post('/', [
-        body('nombre').isLength({min: 5}).withMessage('La longitud mínima del nombre son 5 caracteres'),
-        body('descripcion').isLength({min: 10}).withMessage('La longitud mínima de la descripcion son 10 caracteres')
-    ], 
-    validar, ListadoController.nuevoListado);
+router.post('/',token(), 
+validar, ListadoController.nuevoListado);
 
-router.put('/:id', ListadoController.editarListado);
+router.get('/', token(), ListadoController.todosLosListadosPorUsuario);
 
-router.delete('/:id', ListadoController.eliminarListado);
+router.post('/:id1/songs/:id2', token(), ListadoController.anadirSong);
+
+router.delete('/:id1/songs/:id2', ListadoController.eliminarSong);
+
+router.put('/:id', token(),ListadoController.editarListado);
+
+router.get('/:id1/songs/:id2', ListadoController.obtenerSong);
+
+router.get('/:id/songs/', token(), ListadoController.listAllSongs);
+
+router.delete('/:id', token(),ListadoController.eliminarListado);
 
 export default router;

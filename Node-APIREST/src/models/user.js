@@ -1,35 +1,52 @@
+import 'dotenv/config';
+import bcrypt from 'bcryptjs';
+import validator from 'validator';
 import passport from './services/passport';
 import mongoose from 'mongoose';
 
 
+const { Schema } = mongoose;
+
 const userSchema = new Schema({
-    username: String,
-    email: String
+    fullname:{
+        type: String,
+        required: [true, 'El nombre completo es requerido'],
+        minlength: [8, 'EL nombre debe de tener como minimo 8 caracteres']
+        },
+    username: {
+        type: String,
+        required: [true, 'El nombre de usuario es requerido'],
+        minlength: [5, 'EL nombre debe de tener como minimo 5 caracteres']
+        },
+    email: {
+        type: String,
+        unique: [true, 'Este email ya existe'],
+        required: [true, 'El correo es requerido']
+        },
+    password: {
+        type: String,
+        required: [true, 'La contraseña es requerida'],
+        minlength: [5, 'EL nombre debe de tener como minimo 5 caracteres']
+        }
 });
 const User = mongoose.model('User', userSchema);
-/*
-const indexOfPorId = (id) => {
-    let posicionEncontrado = -1;
-    for (let i = 0; i < users.length && posicionEncontrado == -1; i++) {
-        if (users[i].id == id)
-            posicionEncontrado = i;
+
+function toDto(user){
+    let dto = {
+        fullname: user.fullname,
+        username: user.username,
+        email: user.email,
+        id: user._id
     }
-    return posicionEncontrado;
+    return dto;
 }
 
- * Función que comprueba si un email ya está
- * definido como el email de un usuario en el repositorio
- */
 const emailExists = async (email) => {
     const result = await User.countDocuments({ email: email }).exec();
     return result > 0;
 
 }
 
-/**
- * Función que comprueba si un username ya está
- * definido como el username de un usuario en el repositorio
- */
 const usernameExists = (username) => {
     let usernames = users.map(user => user.username);
     return usernames.includes(username);
@@ -38,31 +55,42 @@ const usernameExists = (username) => {
 const userRepository = {
 
     // Devuelve todos los usuarios del repositorio
-    findAll() {
+    async findAll() {
         const result =  await User.find({}).exec();
         return result;
     },
     // Devuelve un usuario por su Id
-    findById(id) {
+    async findById(id) {
         const result = await User.findById(id).exec();
         return result != null ? result : undefined;
     },
     // Encuentra un usuario por su username
-    findByUsername(username) {
+    async findByUsername(username) {
        let result = users.filter(user => user.username == username);
        return Array.isArray(result) && result.length > 0 ? result[0] : undefined;   
     },
+    // Encuentra un usuario por su email
+    async findByEmail(email) {
+        const result = await User.find({ email: email }).exec();
+        return result != null ? result[0] : undefined;
+    },
+
     // Inserta un nuevo usuario y devuelve el usuario insertado
-    create(newUser) {
+    async create(newUser) {
         const theUser = new User({
+            fullname : newUser.fullname,
             username : newUser.username,
-            email: newUser.email
+            email: newUser.email,
+            password: newUser.password
         });
         const result = await theUser.save();
-        return result; // Posiblemente aquí nos interese implementar un DTO
+        let saved = await User.findById(result.id).exec();
+        theUser.password = bcrypt.hashSync(passw, parseInt(process.env.BCRYPT_ROUNDS));
+        await Object.assign(saved, theUser).save();
+        return toDto(result);
     },
     // Actualiza un usuario identificado por su ID
-    updateById(id, modifiedUser) {
+    async updateById(id, modifiedUser) {
         const userSaved = await User.findById(id);
 
         if (userSaved != null) {
@@ -71,10 +99,10 @@ const userRepository = {
             return undefined;
     },
     // Versión del anterior, en la que el ID va dentro del objeto usuario
-    update(modifiedUser) {
+    async update(modifiedUser) {
         return this.update(modifiedUser.id, modifiedUser);
     }, 
-    delete(id) {
+    async delete(id) {
         await User.findByIdAndRemove(id).exec();
     }
 
